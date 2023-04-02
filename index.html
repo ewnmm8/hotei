@@ -1,0 +1,113 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>練習<title>
+</head>
+<body>
+<script>
+// 読みやすくてバグの出にくいコードの書き方
+// ・名前だけで何をするコードか読めるように名前を付ける。
+// ・部分ごとに取り出せるようにする。
+// ・既存の関数でシンプルに解決する。
+// ・空行を極力使わない
+
+// 板東英二
+// X*Yマスにランダムに板東英二が出て、縦か横でそろっていたら赤文字になって固定される。
+
+Array.prototype.random = function () {
+    return this[Math.floor(Math.random() * this.length)]
+}
+const WORD = "布袋寅泰".split('')
+const X = 30
+const Y = 15
+let field = new Array(X * Y).fill().map(() => ({
+    value: WORD.random(),
+    fixed: false
+}))
+function generate() {
+    /*for (let x of field) {
+        if (!x.fixed) x.value = WORD.random()
+    }*/
+    let i = Math.floor(Math.random() * X * Y)
+    if (field[i].fixed) generate()
+    else field[i].value = WORD.random()
+}
+function check() {
+    const WORD_REGEXP = new RegExp(WORD.join(''), 'g')
+    const WORD_REVERSE_REGEXP = new RegExp(WORD.concat().reverse().join(''), 'g')
+    for (let i = 0; i < X * Y; i += X) {
+        let matches = []
+        let line = field.slice(i, i + X).map(x => x.value).join('')
+        matches.push([...line.matchAll(WORD_REGEXP)])
+        //matches.push([...line.matchAll(WORD_REVERSE_REGEXP)])
+        matches = matches.flat()
+        for (let match of matches) {
+            for (let ii = 0; ii < WORD.length; ii++) {
+                field[i + ii + match.index].fixed = true
+            }
+        }
+    }
+    for (let i = 0; i < X; i++) {
+        let matches = []
+        let line = ''
+        for (let ii = i; ii < X * Y; ii += X) {
+            line += field[ii].value
+        }
+        matches.push([...line.matchAll(WORD_REGEXP)])
+        //matches.push([...line.matchAll(WORD_REVERSE_REGEXP)])
+        matches = matches.flat()
+        for (let match of matches) {
+            for (let ii = 0; ii < WORD.length; ii++) {
+                field[i + (match.index * X) + (ii * X)].fixed = true
+            }
+        }
+    }
+}
+function render() {
+    for (let i = 0; i < X * Y; i++) {
+        document.getElementById("cell-" + i).innerHTML = field[i].value
+        if (field[i].fixed) document.getElementById("cell-" + i).style.color = "#F00"
+    }
+}
+
+let interval_id;
+const INTERVAL_SPEED = 10
+function start() {
+    interval_id = setInterval(() => {
+        generate()
+        check()
+        render()
+    }, INTERVAL_SPEED)
+}
+function stop() {
+    clearInterval(interval_id)
+}
+
+
+const CELL_SIZE = 40; // セルのピクセルサイズ
+const board = []; // マス目のデータ
+// マス目のデータを初期化する
+for (let i = 0; i < Y; i++) {
+  board[i] = [];
+  for (let j = 0; j < X; j++) {
+    board[i][j] = "";
+  }
+}
+// マス目を表すテーブルのHTMLを生成する
+let tableHtml = "<table style='border-collapse: collapse;'>";
+for (let i = 0; i < Y; i++) {
+  tableHtml += "<tr>";
+  for (let j = 0; j < X; j++) {
+    const cellId = `cell-${i * X + j}`;
+    tableHtml += `<td id="${cellId}" style="width:${CELL_SIZE}px;height:${CELL_SIZE}px;border:1px solid black;"></td>`;
+  }
+  tableHtml += "</tr>";
+}
+tableHtml += "</table>";
+document.body.innerHTML = tableHtml;
+
+
+start()
+</script>
+</body>
+</html>
