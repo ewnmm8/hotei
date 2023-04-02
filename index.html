@@ -28,43 +28,43 @@ function generate() {
     /*for (let x of field) {
         if (!x.fixed) x.value = WORD.random()
     }*/
-    let i = Math.floor(Math.random() * X * Y)
-    if (field[i].fixed) generate()
-    else field[i].value = WORD.random()
+    let random_index = Math.floor(Math.random() * field.length)
+    if (field[random_index].fixed) generate()
+    else field[random_index].value = WORD.random()
 }
 function check() {
     const WORD_REGEXP = new RegExp(WORD.join(''), 'g')
     const WORD_REVERSE_REGEXP = new RegExp(WORD.concat().reverse().join(''), 'g')
-    for (let i = 0; i < X * Y; i += X) {
+    for (let column = 0; column < field.length; column += X) {
         let matches = []
-        let line = field.slice(i, i + X).map(x => x.value).join('')
+        let line = field.slice(column, column + X).map(obj => obj.value).join('')
         matches.push([...line.matchAll(WORD_REGEXP)])
         //matches.push([...line.matchAll(WORD_REVERSE_REGEXP)])
         matches = matches.flat()
         for (let match of matches) {
-            for (let ii = 0; ii < WORD.length; ii++) {
-                field[i + ii + match.index].fixed = true
+            for (let word_len = 0; word_len < WORD.length; word_len++) {
+                field[column + match.index + word_len].fixed = true
             }
         }
     }
-    for (let i = 0; i < X; i++) {
+    for (let column = 0; column < X; column++) {
         let matches = []
         let line = ''
-        for (let ii = i; ii < X * Y; ii += X) {
-            line += field[ii].value
+        for (let row = column; row < field.length; row += X) {
+            line += field[row].value
         }
         matches.push([...line.matchAll(WORD_REGEXP)])
         //matches.push([...line.matchAll(WORD_REVERSE_REGEXP)])
         matches = matches.flat()
         for (let match of matches) {
-            for (let ii = 0; ii < WORD.length; ii++) {
-                field[i + (match.index * X) + (ii * X)].fixed = true
+            for (let word_len = 0; word_len < WORD.length; word_len++) {
+                field[column + (match.index * X) + (word_len * X)].fixed = true
             }
         }
     }
 }
 function render() {
-    for (let i = 0; i < X * Y; i++) {
+    for (let i = 0; i < field.length; i++) {
         document.getElementById("cell-" + i).innerHTML = field[i].value
         if (field[i].fixed) document.getElementById("cell-" + i).style.color = "#F00"
     }
